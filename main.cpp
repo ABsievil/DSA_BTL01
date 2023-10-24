@@ -1,7 +1,7 @@
 #include "main.h"
 #include "Restaurant.cpp"
 #include <fstream>
-
+#include <string>
 int MAXSIZE;
 
 void simulate(string filename, imp_res* r)
@@ -51,17 +51,41 @@ void simulate(string filename, imp_res* r)
 }
 
 int main(int argc, char* argv[]) {
-	// if (argc < 2)
-    // 	return 1;
-	//  string fileName = "input\\input";
-	//  fileName+= argv[1];
-	//  fileName+=".txt";
-	imp_res* r = new imp_res();
-	string fileName = "test.txt";
-    simulate(fileName, r);
-	system("pause");
-  	delete r;
-
+	if(argc<2){
+		string fileName = "test.txt";
+		imp_res* r = new imp_res();
+		simulate(fileName, r);
+		system("pause");
+		delete r;
+	}
+	else if(argc ==2){
+		 string fileName = "input\\input";
+		 fileName+= argv[1];
+		 fileName+=".txt";
+		imp_res* r = new imp_res();
+		//string fileName = "test.txt";
+		simulate(fileName, r);
+		//system("pause");
+		delete r;
+	}
+	else if(argc ==3){
+		int argv1 = stoi(argv[1]);
+		int argv2 = stoi(argv[2]);
+		cout<<"LOADING TO :";
+		for(int i=argv1; i<=argv2;i++){
+			cout<<i<<" ";
+			string fileName = "input\\input";
+			fileName+= i;
+			fileName+=".txt";
+			imp_res* r = new imp_res();
+			simulate(fileName, r);
+			delete r;
+		}
+		cout<<"\nFINISHED\n";
+		//system("pause");
+	}
+	
+	
 	return 0;
 }
 
