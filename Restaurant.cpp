@@ -1,11 +1,7 @@
 #include "main.h"
-#include <cstdlib>
-#include <ctime>
+
 extern int MAXSIZE;
 
-/*---------------NOTE------------------
-finished
----------------END NOTE------------------*/
 class Node{ //set time customer is added to circle, time start = 0 (maxTime)
 public:
 		int time;
@@ -56,13 +52,25 @@ public:
 
 	int idexAtMaxEnergyCusOfQueue(){
 		int eMax = std::abs(front->energy);
+		customer* cusAt_eMax = front;
+
 		int idex = 0;
 		if(this->size ==1) return idex;
 		customer* run = front->next;
 		for(int i=1; i<size; i++, run = run->next){
-			if(eMax <= std::abs(run->energy)){
+			if(eMax < std::abs(run->energy)){
 				eMax = std::abs(run->energy);
+				cusAt_eMax = run;
 				idex = i;
+			}
+			else if(eMax == std::abs(run->energy)){
+				int timeAt_eMax = getTimeNodeInQueue(cusAt_eMax->name, cusAt_eMax->energy);
+				int timeAt_Run = getTimeNodeInQueue(run->name, run->energy);
+				if(timeAt_eMax < timeAt_Run){
+					eMax = std::abs(run->energy);
+					cusAt_eMax = run;
+					idex = i;
+				}
 			}
 		}
 		return idex;
@@ -180,9 +188,8 @@ public:
 
 	void deleteElementQueue(string na, int e){  //where print element cus want delete 
 		customer* run= front;
-		for(int i=0;i<size;i++,run= run->next){
+		for(int i=0;i<size;i++,run= run->next){     //find run is cus want delete in queue
 			if(run->name == na && run->energy == e) {
-				run->print();
 				break;
 			}
 		}
@@ -246,6 +253,17 @@ public:
 		deleteNodeTimeOfQueue(nodeWantDelete);
 	}
 
+	bool findCus(string na, int e, const bool isDeleteMagician){
+		customer* run= front;
+		for(int i=0;i<size;i++,run= run->next){
+			if(run->name == na && run->energy == e) {
+				if(isDeleteMagician && run->energy >0) run->print();
+				else if(!isDeleteMagician && run->energy <0) run->print();
+				return true;
+			}
+		}
+		return false;
+	}
     ~Queue() {
         while (!isEmpty()) {
             dequeue();  //delete element in queue and node time in queue
@@ -419,7 +437,7 @@ class imp_res : public Restaurant
 		}
 		void PURPLE()
 		{
-			//cout << "====PURPLE"<< endl;  
+			//cout << "====PURPLE"<<endl;  
 			if(queueCustomer->isEmpty()) return ;
 			int numElementInQueueWantSort = queueCustomer->idexAtMaxEnergyCusOfQueue() +1;
 
@@ -461,77 +479,98 @@ class imp_res : public Restaurant
 		}
 		void UNLIMITED_VOID()
 		{
-			//cout << "====UNLIMITED_VOID" << endl;  
-			if(sizeCus<=3) return ;
-			else{
-				customer* runSequence = positionX; 
-				int minEnergy = 0;
-				int sizeOfList = 0;
-				int minEnergyTemp = 0;
-				int sizeOfListTemp = 0;
-				/*find sequence total energy mininum */
-				for(int i=1;i<= sizeCus; i++, runSequence = runSequence->next){  //i is num element of sequence
-					if(i<=4){
-						minEnergy+= runSequence->energy;
-						sizeOfList++;
-						minEnergyTemp = minEnergy;
-						sizeOfListTemp = sizeOfList;
-					}
-					else{
-						int energyCurrent = minEnergyTemp + runSequence->energy;
-						if(minEnergy >= energyCurrent) {
+			//cout << "unlimited_void" << endl;
+			int minEnergy = 0;
+			customer* headOfLink = nullptr;
+			int sizeOfLink = 0;
+
+			for(int i=4;i<= sizeCus;i++){
+				customer* run = positionX; 
+				if(i != sizeCus){
+					for(int j = 0 ; j <sizeCus ; run = run->next, j++){
+						customer* temp = run;
+						int energyCurrent = 0;
+						for(int k=0; k< i;temp = temp->next, k++){
+							energyCurrent+= temp->energy;
+						}
+
+						if(i==4 && headOfLink == nullptr) {
 							minEnergy = energyCurrent;
-							sizeOfList = sizeOfListTemp +1;
-							minEnergyTemp = energyCurrent;
-							sizeOfListTemp++;
+							headOfLink = run;
+							sizeOfLink = i;
 						}
-						else {
-							minEnergyTemp = energyCurrent;
-							sizeOfListTemp++;
+						else if( energyCurrent <= minEnergy){
+							minEnergy = energyCurrent;
+							headOfLink = run;
+							sizeOfLink = i;
 						}
 					}
 				}
+				else{
+					int energyCurrent = 0;
+					for(int j=0; j<sizeCus; run = run->next, j++){
+						energyCurrent+= run->energy;
+					}
 
-				customer* headOfList = nullptr;   //save value
-				customer* nodeCurrentOfList = nullptr;
-				customer* run = positionX;
-				/* create list is sequence want print */
-				for(int i=0; i<sizeOfList; i++, run = run->next){  
+					if(i==4 && headOfLink == nullptr) {
+						minEnergy = energyCurrent;
+						headOfLink = run;
+						sizeOfLink = i;
+					}
+					else if( energyCurrent <= minEnergy){
+						minEnergy = energyCurrent;
+						headOfLink = run;
+						sizeOfLink = i;
+					}
+				}
+			}
+
+			if(headOfLink != nullptr) {
+				customer* run = headOfLink;
+				headOfLink = nullptr; //head Of Link, have data
+				customer* NodeCurrentOfLink = nullptr; 
+				for(int i=0; i<sizeOfLink; i++,run= run->next){
 					customer* newCus = new customer(run->name,run->energy,nullptr,nullptr);
-					if(headOfList== nullptr){
-						headOfList = newCus;
-						nodeCurrentOfList = headOfList;
+					if(headOfLink == nullptr) {
+						headOfLink = newCus;
+						NodeCurrentOfLink = headOfLink;
 					}
 					else{
-						nodeCurrentOfList->next = newCus;
-						newCus->prev = nodeCurrentOfList;
-						nodeCurrentOfList = nodeCurrentOfList->next;
+						NodeCurrentOfLink->next = newCus;
+						newCus->prev = NodeCurrentOfLink;
+						NodeCurrentOfLink= NodeCurrentOfLink->next;
 					}
 				}
 
-				// find min list , note: list != circle list in imp_res class
+				// cout<<"list finded:"<<endl;
+				// customer* X = headOfLink;
+				// for(int i=0;i<sizeOfLink;i++, X = X->next){
+				// 	X->print();
+				// }
+
+				// find min list , note list != circle list in imp_res class
 				int idexOfMinElement = -1;
-				customer* minElement = findMinListCus(headOfList,sizeOfList, idexOfMinElement);
+				customer* minElement = findMinListCus(headOfLink,sizeOfLink, idexOfMinElement);
+
+				//cout<<"minElement:"<<minElement->name<<" "<<minElement->energy<<" idex:"<<idexOfMinElement<<endl;
 
 				/*print list */
 				customer* temp = minElement;
-				for(int i= idexOfMinElement;i<sizeOfList;i++,temp = temp->next){
+				for(int i= idexOfMinElement;i<sizeOfLink;i++,temp = temp->next){
 					temp->print();
 				}
-				temp = headOfList;
+				temp = headOfLink;
 				for(int i=0;i<idexOfMinElement;i++, temp = temp->next){
 					temp->print();
 				}
 				
-				//delete from headOfList with sizeOfList element
-				temp = headOfList;
-				for(int i=0;i<sizeOfList && temp != nullptr;i++){
+				//delete from headOfLink with sizeOfLink element
+				temp = headOfLink;
+				for(int i=0;i<sizeOfLink && temp != nullptr;i++){
 					customer* temp2 = temp->next;
 					delete temp;
 					temp = temp2;
-					if(temp!= nullptr) temp->prev = nullptr;
 				}
-
 			}
 		}
 		void DOMAIN_EXPANSION()
@@ -539,12 +578,15 @@ class imp_res : public Restaurant
 			//cout << "====DOMAIN_EXPANSION" << endl; 
 			//PRINT();
 			/* delete all chú linh or chú thuật sư */
+			if(sizeCus ==0 && queueCustomer->isEmpty()) return ;
 			int energyOfAllCus = 0;
+			int energyOfMagician = 0;
 			customer* run = this->head;
 			if(run != nullptr) {
 				run= run->next;
 				for(int i=0;i< this->sizeCus ;i++, run = run->next){ //check energy of cus in Table
 					energyOfAllCus += run->energy;
+					if(run->energy > 0) energyOfMagician+= run->energy;
 				}
 			}
 
@@ -553,22 +595,26 @@ class imp_res : public Restaurant
 				int sizeQ = queueCustomer->getSize();
 				for(int i=0;i < sizeQ; i++, run = run->next){       //check energy of cus in Queue
 					energyOfAllCus+= run->energy;
+					if(run->energy > 0) energyOfMagician+= run->energy;
 				}
 			}
-
+			
 			/*list time node arranged in table and queue*/
 			Node* headTime = nullptr;    //list time combined
 			Node* timeCurrent = nullptr;  //list time combined
 			addToListTime(headTime,timeCurrent);   //add Time in table and queue
 
-			selectionSort(headTime,timeCurrent); //arrange list time with head Node is headTime = selection sort
+			insertSort(headTime,timeCurrent); //arrange list time with head Node is headTime = selection sort
+
+			bool isdeleteMagician = energyOfMagician < std::abs(energyOfAllCus) ;
+			printListDomain(timeCurrent,isdeleteMagician);    //print list from node timeCurrent to headTime
 
 			int numOfdeletedCustomer = 0; 
-			for(Node* run = timeCurrent; run!= nullptr; run= run->prev){
+			for(Node* run = headTime; run!= nullptr; run= run->next){  //delete from headTime to timeCurrent
 				bool findAtTable = false;
 				Node* nodeWantDelete = findTime(run->time, findAtTable);
 				
-				if(energyOfAllCus>=0 && nodeWantDelete->energy <0) {  //delete Evil spirit
+				if(!isdeleteMagician && nodeWantDelete->energy <0) {  //delete Evil spirit
 					if(!findAtTable && !queueCustomer->isEmpty()) {  
 						queueCustomer->deleteElementInQueue(nodeWantDelete); //delete evil spirit in Queue
 					}
@@ -576,7 +622,7 @@ class imp_res : public Restaurant
 
 					numOfdeletedCustomer++;
 				}
-				else if(energyOfAllCus<0 && nodeWantDelete->energy >0){  //delete Magician
+				else if(isdeleteMagician && nodeWantDelete->energy >0){  //delete Magician
 					if(!findAtTable && !queueCustomer->isEmpty()) {     
 						queueCustomer->deleteElementInQueue(nodeWantDelete);  //delete Magician in Queue
 					}
@@ -600,7 +646,7 @@ class imp_res : public Restaurant
 		}
 		void LIGHT(int num)
 		{
-			//cout << "====LIGHT " << num << endl; 
+			 //cout << "====LIGHT " << num << endl; 
 			if(num>0){
 				customer* run = positionX;
 				for(int i=0;i<sizeCus;i++, run = run->next){
@@ -621,9 +667,6 @@ class imp_res : public Restaurant
 			}
 			//PRINT();  //delete PRINT() and printTimeInTable, element print time in queue of printQueue
 		}
-
-//support to class imp_res
-		
 
 //support to RED func
 		bool isNameHaved(string nameNewCus){
@@ -799,8 +842,6 @@ class imp_res : public Restaurant
 		void deleteElementInTable(Node* nodeWantDelete,bool isMagician){
 			customer* cusWantDelete = findCus(nodeWantDelete->name, nodeWantDelete->energy);
 
-			cusWantDelete->print(); // print customer want delete
-
 			deleteModuleCus(cusWantDelete,isMagician); //delete Customer and set positionX = cusWantDelete->prev
 			deleteElementNode(nodeWantDelete);
 		}
@@ -859,7 +900,7 @@ class imp_res : public Restaurant
 				}
 			}
 		}
-		void selectionSort(Node*& headTime, Node*& timeCurrent){
+		void insertSort(Node*& headTime, Node*& timeCurrent){
 			 Node* pRight = timeCurrent;
 			for (Node* run = timeCurrent->prev; run != nullptr; run = pRight->prev) {
 				if (run->time <= pRight->time) pRight = pRight->prev;
@@ -910,6 +951,16 @@ class imp_res : public Restaurant
 				}
 			}
 			return nullptr;
+		}
+		void printListDomain(Node* timeCurrent, const bool isDeleteMagician){
+			for(Node* run = timeCurrent; run != nullptr ; run = run->prev){
+				bool isHaveInQueue = queueCustomer->findCus(run->name, run->energy, isDeleteMagician); //call and print cus
+				if(!isHaveInQueue){
+					customer* cusLoading = findCus(run->name, run->energy);
+					if(isDeleteMagician && cusLoading->energy >0) cusLoading->print();
+					else if(!isDeleteMagician && cusLoading->energy <0) cusLoading->print();
+				}
+			}
 		}
 //support to UNLIMITED_VOID func
 		customer* findMinListCus(customer* headOfLink, int size, int& indexOfMinElement){
@@ -987,4 +1038,23 @@ class imp_res : public Restaurant
 			head=nullptr; 
 			headOfTimeCus = nullptr;
 		}
+
+		// void printTimeInTable(){ //check nho xoa
+		// 	Node* run = headOfTimeCus->next;
+		// 	cout<<"--Time in Table:\n";
+		// 	for(int i=0;i<sizeCus;i++,run = run->next){
+		// 		cout<<run->time<<" "<<run->name<<" "<<run->energy<<endl;
+		// 	}
+		// }
+		// void PRINT(){//check nho xoa
+		// 	cout<<"--Cus:\n";
+		// 	customer* run = positionX;
+		// 	for(int i=0;i<sizeCus;i++, run = run->next){
+		// 		cout<<run->name<<" "<<run->energy<<" ";
+		// 	}cout<<endl;
+		// 	printTimeInTable();
+		// 	cout<<"--queue:\n";
+		// 	queueCustomer->printQueue();
+		// 	cout<<"=============="<<endl;
+		// }
 };
