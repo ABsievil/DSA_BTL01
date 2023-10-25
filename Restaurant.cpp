@@ -92,6 +92,12 @@ public:
 		for(int i=0;i< size ; i++, run= run->next){
 			run->print();
 		} 
+		// // /*check nho xoa*/
+		// Node* temp = headTimeOfQueue;
+		// cout<<"time in Queue:\n";
+		// for(int i=0;i<size;i++, temp = temp->next){
+		// 	cout<<temp->time<<" "<<temp->name<<" "<<temp->energy<<endl;
+		// } 
 	}
 
 	customer* getCusAtIndex(customer* A,int index){
@@ -175,6 +181,21 @@ public:
 			this->size--;
         }
     }
+	// int getTimeNodeInQueue(string na, int e){
+	// 	Node* out = getNodeInQueue(na,e);
+	// 	if(out != nullptr) return out->time;
+	// 	else return -1;
+	// }
+	// Node* getNodeInQueue(string na, int e){
+	// 	Node* run = headTimeOfQueue;
+	// 	for(int i=0;i<size;i++, run= run->next){
+	// 		if(run->name == na && run->energy == e){
+	// 			return run;
+	// 		}
+	// 	}
+	// 	return nullptr;
+	// }
+
 	int getTimeNodeInQueue(string na, int e){
 		Node* runnode = headTimeOfQueue;
 		for(int i=0;i<size;i++, runnode= runnode->next){
@@ -430,7 +451,8 @@ class imp_res : public Restaurant
 		}
 		void BLUE(int num)
 		{	
-			//cout << "====BLUE "<< num <<" "<< sizeCus << endl; 
+			// cout << "====BLUE "<< num <<" "<< sizeCus << endl; 
+			// PRINT();
 			if(num>= sizeCus || num > MAXSIZE) num = sizeCus;
 			deleteCustomers(num); 
 			loadQueueToCus(num); 
@@ -506,7 +528,7 @@ class imp_res : public Restaurant
 						}
 					}
 				}
-				else{
+				else{  	// size link == size cus in table
 					int energyCurrent = 0;
 					for(int j=0; j<sizeCus; run = run->next, j++){
 						energyCurrent+= run->energy;
@@ -580,13 +602,13 @@ class imp_res : public Restaurant
 			/* delete all chú linh or chú thuật sư */
 			if(sizeCus ==0 && queueCustomer->isEmpty()) return ;
 			int energyOfAllCus = 0;
-			int energyOfMagician = 0;
+			//int energyOfMagician = 0;
 			customer* run = this->head;
 			if(run != nullptr) {
 				run= run->next;
 				for(int i=0;i< this->sizeCus ;i++, run = run->next){ //check energy of cus in Table
 					energyOfAllCus += run->energy;
-					if(run->energy > 0) energyOfMagician+= run->energy;
+					//if(run->energy > 0) energyOfMagician+= run->energy;
 				}
 			}
 
@@ -595,18 +617,18 @@ class imp_res : public Restaurant
 				int sizeQ = queueCustomer->getSize();
 				for(int i=0;i < sizeQ; i++, run = run->next){       //check energy of cus in Queue
 					energyOfAllCus+= run->energy;
-					if(run->energy > 0) energyOfMagician+= run->energy;
+					//if(run->energy > 0) energyOfMagician+= run->energy;
 				}
 			}
 			
 			/*list time node arranged in table and queue*/
 			Node* headTime = nullptr;    //list time combined
 			Node* timeCurrent = nullptr;  //list time combined
-			addToListTime(headTime,timeCurrent);   //add Time in table and queue
+			addToListTime(headTime,timeCurrent);   //add Time in table and queue to headTime
 
 			insertSort(headTime,timeCurrent); //arrange list time with head Node is headTime = selection sort
 
-			bool isdeleteMagician = energyOfMagician < std::abs(energyOfAllCus) ;
+			bool isdeleteMagician = energyOfAllCus <0;
 			printListDomain(timeCurrent,isdeleteMagician);    //print list from node timeCurrent to headTime
 
 			int numOfdeletedCustomer = 0; 
@@ -834,9 +856,40 @@ class imp_res : public Restaurant
 				queueCustomer->dequeue();   //delete cus in queue and node time of cus in queue
 				RED(firstName,firstEnergy);	
 				timeNodeOfTimeCusCurrent = tempTimeNode;  //reset time
+
+				sortTimeCus();  // arrange NodeOfTimeCusCurrent
 			}
 			else return ;
 		}
+		}
+		void sortTimeCus(){
+			if(sizeCus <=1) return ;
+			if(NodeOfTimeCusCurrent->time > NodeOfTimeCusCurrent->prev->time) return ;
+			Node* newNodeTime = NodeOfTimeCusCurrent;
+			NodeOfTimeCusCurrent = NodeOfTimeCusCurrent->prev;
+			NodeOfTimeCusCurrent->next = nullptr;
+			newNodeTime->prev = nullptr;
+			
+			Node* run = headOfTimeCus->next;
+			Node* preRun = nullptr;
+			for(int i=0; i< sizeCus-1 ; i++, run = run->next){
+				if(newNodeTime->time < run->time){
+					if(i==0) {  // run is first node in queue
+						headOfTimeCus->next = newNodeTime;
+						newNodeTime->prev = headOfTimeCus;
+						newNodeTime->next = run;
+						run->prev = newNodeTime;
+					}
+					else{
+						preRun->next = newNodeTime;
+						newNodeTime->prev = preRun;
+						newNodeTime->next = run;
+						run->prev = newNodeTime;
+					}
+					break;
+				}
+				preRun = run;
+			}
 		}
 //support to DOMAIN_EXPANSION func
 		void deleteElementInTable(Node* nodeWantDelete,bool isMagician){
