@@ -17,33 +17,40 @@ void simulate(string filename, imp_res* r)
     	}
         else if(str == "RED") // RED <NAME> <ENERGY>
         {
+			cout<<"RED\n";
             ss >> name;
             ss >> energy;
             r->RED(name, stoi(energy));
     	}
     	else if(str == "BLUE") // BLUE <NUM>
     	{
+			cout<<"BLUE\n";
                 ss >> num;
     			r->BLUE(stoi(num));
 		}
     	else if(str == "PURPLE") // PURPLE
     	{
+			cout<<"PURPLE\n";
     			r->PURPLE();
 		}
 		else if(str == "REVERSAL") // REVERSAL
 		{
+			cout<<"REVERSAL\n";
     			r->REVERSAL();	
 		}
     	else if(str == "UNLIMITED_VOID") // UNLIMITED_VOID
      	{   	
+			cout<<"UNLIMITED_VOID\n";
     			r->UNLIMITED_VOID();
     	}
     	else if(str == "DOMAIN_EXPANSION") // DOMAIN_EXPANSION
     	{
+			cout<<"DOMAIN_EXPANSION\n";
     			r->DOMAIN_EXPANSION();
     	}
     	else // LIGHT <NUM>
     	{
+			cout<<"LIGHT\n";
                 ss >> num;
     			r->LIGHT(stoi(num));
     	}

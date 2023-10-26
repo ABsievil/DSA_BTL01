@@ -1,7 +1,6 @@
 #include "main.h"
 
-extern int MAXSIZE;
-// The differentation with ResSubmit.cpp is this file have comment PRINT() func 
+//extern int MAXSIZE;
 
 class Node{ //set time customer is added to circle, time start = 0 (maxTime)
 public:
@@ -93,12 +92,6 @@ public:
 		for(int i=0;i< size ; i++, run= run->next){
 			run->print();
 		} 
-		// /*check nho xoa*/
-		// Node* temp = headTimeOfQueue;
-		// cout<<"time in Queue:\n";
-		// for(int i=0;i<size;i++, temp = temp->next){
-		// 	cout<<temp->time<<" "<<temp->name<<" "<<temp->energy<<endl;
-		// } 
 	}
 
 	customer* getCusAtIndex(customer* A,int index){
@@ -502,11 +495,11 @@ class imp_res : public Restaurant
 					minEnergy+= run->energy;
 					constEnergy = minEnergy;
 				}
-				else if(i== sizeCus-1){
+				else if(i== sizeCus-1 ){
 					int tempE = constEnergy + run->energy;
-					if(tempE <= minEnergy){
+					if(tempE <= minEnergy || sizeCus ==4){
 						minEnergy = tempE;
-						headOfLink = positionX;
+						headOfLink = positionX->prev;
 						sizeOfLink = i+1;
 					}
 				}
@@ -1084,23 +1077,4 @@ class imp_res : public Restaurant
 			head=nullptr; 
 			headOfTimeCus = nullptr;
 		}
-
-		// void printTimeInTable(){ //check nho xoa
-		// 	Node* run = headOfTimeCus->next;
-		// 	cout<<"--Time in Table:\n";
-		// 	for(int i=0;i<sizeCus;i++,run = run->next){
-		// 		cout<<run->time<<" "<<run->name<<" "<<run->energy<<endl;
-		// 	}
-		// }
-		// void PRINT(){//check nho xoa
-		// 	cout<<"--Cus:\n";
-		// 	customer* run = positionX;
-		// 	for(int i=0;i<sizeCus;i++, run = run->next){
-		// 		cout<<run->name<<" "<<run->energy<<" ";
-		// 	}cout<<endl;
-		// 	printTimeInTable();
-		// 	cout<<"--queue:\n";
-		// 	queueCustomer->printQueue();
-		// 	cout<<"=============="<<endl;
-		// }
 };
