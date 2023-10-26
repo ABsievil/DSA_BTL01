@@ -1,6 +1,6 @@
 #include "main.h"
 
-//extern int MAXSIZE;
+extern int MAXSIZE;
 
 class Node{ //set time customer is added to circle, time start = 0 (maxTime)
 public:
@@ -438,7 +438,6 @@ class imp_res : public Restaurant
 		void BLUE(int num)
 		{	
 			//cout << "====BLUE "<< num <<" "<< sizeCus << endl; 
-			// PRINT();
 			if(num>= sizeCus || num > MAXSIZE) num = sizeCus;
 			else if(num <=0) return ;
 			deleteCustomers(num); 
@@ -605,7 +604,7 @@ class imp_res : public Restaurant
 			/*list time node arranged in table and queue*/
 			Node* headTime = nullptr;    //list time combined
 			Node* timeCurrent = nullptr;  //list time combined
-			addToListTime(headTime,timeCurrent);   //add Time in table and queue to headTime
+			addToListTime(headTime,timeCurrent);   //create sequence of Time in table and queue to in headTime
 
 			insertSort(headTime,timeCurrent); //arrange list time with head Node is headTime = selection sort
 
@@ -614,7 +613,7 @@ class imp_res : public Restaurant
 
 			int numOfdeletedCustomer = 0; 
 			for(Node* run = headTime; run!= nullptr; run= run->next){  //delete from headTime to timeCurrent
-				bool findAtTable = false;
+				bool findAtTable = false;   //if true then run in table, else run in queue
 				Node* nodeWantDelete = findTime(run->time, findAtTable);
 				
 				if(!isdeleteMagician && nodeWantDelete->energy <0) {  //delete Evil spirit
@@ -668,7 +667,6 @@ class imp_res : public Restaurant
 				}
 				else return ;
 			}
-			//PRINT();  //delete PRINT() and printTimeInTable, element print time in queue of printQueue
 		}
 
 //support to RED func
@@ -748,7 +746,7 @@ class imp_res : public Restaurant
 			timeNodeOfTimeCusCurrent++;
 		}
 //support to BLUE func
-		void deleteCustomers(int num){
+		void deleteCustomers(int num){   // num is expected <= sizeCus
 			Node* run = headOfTimeCus;
 			if(run != NULL) run = run->next;
 			else return ;
@@ -850,8 +848,9 @@ class imp_res : public Restaurant
 		}
 		void sortTimeCus(){
 			if(sizeCus <=1) return ;
-			if(NodeOfTimeCusCurrent->time > NodeOfTimeCusCurrent->prev->time) return ;
-			Node* newNodeTime = NodeOfTimeCusCurrent;
+			if(NodeOfTimeCusCurrent->time > NodeOfTimeCusCurrent->prev->time) return ;  // sequence is arranged
+			/* isolation NodeOfTimeCusCurrent */
+			Node* newNodeTime = NodeOfTimeCusCurrent;    // node is added recently = NodeOfTimeCusCurrent
 			NodeOfTimeCusCurrent = NodeOfTimeCusCurrent->prev;
 			NodeOfTimeCusCurrent->next = nullptr;
 			newNodeTime->prev = nullptr;
@@ -866,7 +865,7 @@ class imp_res : public Restaurant
 						newNodeTime->next = run;
 						run->prev = newNodeTime;
 					}
-					else{
+					else{   // insert preRun<->newNodeTime<->run
 						preRun->next = newNodeTime;
 						newNodeTime->prev = preRun;
 						newNodeTime->next = run;
@@ -905,7 +904,7 @@ class imp_res : public Restaurant
 					headOfTimeCus->next = nullptr;
 				}
 			}
-			else { //if node is normal
+			else { //if node want delete is normal
 				temp->prev->next = temp->next;
 				temp->next->prev = temp->prev;
 			}
@@ -913,7 +912,7 @@ class imp_res : public Restaurant
 		}
 		void addToListTime(Node*& headTime, Node*& timeCurrent){ //add Time in table and queue
 			/* copy frome time in table to headTime*/
-			if(headOfTimeCus != nullptr){
+			if(headOfTimeCus != nullptr && sizeCus !=0){
 			Node* run = headOfTimeCus->next;	
 				for(int i=0; i<sizeCus; i++, run = run->next){ 
 					if(headTime == nullptr){
@@ -932,7 +931,8 @@ class imp_res : public Restaurant
 			/* copy from time in queue to headTime */
 			Node* headTimeInQueue = nullptr;
 			if(!queueCustomer->isEmpty()) headTimeInQueue = queueCustomer->getHeadTimeOfQueue();
-			for(Node* run = headTimeInQueue; run!= nullptr; run = run->next){  // can appear bug at run != nullptr
+			int i=0, sizeQ = queueCustomer->getSize();  //ensure not appear bug
+			for(Node* run = headTimeInQueue; run!= nullptr && i<sizeQ ;i++, run = run->next){  // can appear bug at run != nullptr
 				if(headTime== nullptr){
 					headTime = new Node(run->time, run->name, run->energy);
 					timeCurrent = headTime;
@@ -948,25 +948,25 @@ class imp_res : public Restaurant
 		void insertSort(Node*& headTime, Node*& timeCurrent){
 			 Node* pRight = timeCurrent;
 			for (Node* run = timeCurrent->prev; run != nullptr; run = pRight->prev) {
-				if (run->time <= pRight->time) pRight = pRight->prev;
+				if (run->time <= pRight->time) pRight = pRight->prev;   //next step
 				else {
-					if(run->prev != nullptr) {
+					if(run->prev != nullptr) {     //if run != headTime
 						run->prev->next = pRight; 
 						pRight->prev = run->prev;
 					}
-					else{
+					else{ //else run == headTime reset headTime = pRight
 						pRight->prev = nullptr;
 						headTime= pRight;
 					}
 					for(Node* tmp = pRight; tmp != nullptr; tmp = tmp->next){
-						if(run->time > tmp->time && tmp->next == nullptr){
+						if(run->time > tmp->time && tmp->next == nullptr){     //if run is max of sequence
 							tmp->next = run;
 							run->prev = tmp;
 							run->next = nullptr;
 							timeCurrent = run;
 							break;
 						}
-						else if(run->time <= tmp->time){
+						else if(run->time <= tmp->time){    //insert preTmp<->run<->tmp
 							tmp->prev->next = run;
 							run->prev = tmp->prev;
 							run->next = tmp;
